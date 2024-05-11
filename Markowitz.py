@@ -66,7 +66,15 @@ class EqualWeightPortfolio:
         """
         TODO: Complete Task 1 Below
         """
-
+        df_dict = df.to_dict()
+        for k, v in df_dict.items():
+            if k == "SPY":
+                for date in v.keys():
+                    df_dict[k][date] = 0.0
+            else:
+                for date in v.keys():
+                    df_dict[k][date] = 1 / 11
+        self.portfolio_weights = pd.DataFrame.from_dict(df_dict)
         """
         TODO: Complete Task 1 Above
         """
@@ -117,7 +125,20 @@ class RiskParityPortfolio:
         """
         TODO: Complete Task 2 Below
         """
-
+        vol_inverse = {}
+        i = 1
+        for date in self.portfolio_weights.index:
+            self.portfolio_weights["SPY"][date] = 0
+            if i <= 51:
+                for a in assets:
+                    self.portfolio_weights[a][date] = 0
+            else:
+                for a in assets:
+                    vol_inverse[a] = 1 / df_returns[i-51: i-1][a].std()
+                SUM = np.sum(list(vol_inverse.values()))
+                for a in assets:
+                    self.portfolio_weights[a][date] = vol_inverse[a] / SUM
+            i += 1
         """
         TODO: Complete Task 2 Above
         """
@@ -193,7 +214,8 @@ class MeanVariancePortfolio:
                 # Sample Code: Initialize Decision w and the Objective
                 # NOTE: You can modify the following code
                 w = model.addMVar(n, name="w", ub=1)
-                model.setObjective(w.sum(), gp.GRB.MAXIMIZE)
+                model.setObjective(w.transpose() @ mu - gamma / 2 * w.transpose() @ Sigma @ w, gp.GRB.MAXIMIZE)
+                model.addConstr(w.sum() == 1)
 
                 """
                 TODO: Complete Task 3 Below

@@ -74,7 +74,25 @@ class MyPortfolio:
         """
         TODO: Complete Task 4 Below
         """
-
+        w = [0.3, 0.2, 0.1, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+        returns = self.price.pct_change().fillna(0)
+        i = 1
+        for date in self.portfolio_weights.index:
+            self.portfolio_weights["SPY"][date] = 0
+            if i <= 51:
+                for a in assets:
+                    self.portfolio_weights[a][date] = 1 / 11
+            else:
+                sp = {}
+                for a in assets:
+                    if returns[i-51: i-1][a].std() != 0:
+                        sp[a] = returns[a][i-1] / returns[i-51: i-1][a].std()
+                    else:
+                        sp[a] = 0.5
+                sorted_sp = {list(sp.keys())[i]: list(sp.values())[i] for i in np.argsort(list(sp.values()))[::-1]}
+                for j, a in enumerate(sorted_sp.keys()):
+                    self.portfolio_weights[a][date] = w[j]
+            i += 1
         """
         TODO: Complete Task 4 Above
         """
